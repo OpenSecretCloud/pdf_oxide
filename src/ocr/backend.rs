@@ -5,8 +5,8 @@
 //! the single "run an ONNX graph" operation behind [`InferenceBackend`]
 //! so the same detector/recognizer + pre/post-processing drive either:
 //!
-//! * [`OrtBackend`] — native ONNX Runtime (`ocr` feature), the
-//!   default everywhere it is available; unchanged behaviour.
+//! * [`OrtBackend`] — native ONNX Runtime (`ocr-ort` feature; the legacy
+//!   `ocr` feature implies it), the default everywhere it is available.
 //! * [`TractBackend`] — pure-Rust `tract` (`ocr-tract` feature, which
 //!   `ml` implies), the path the browser/Deno/edge `wasm32` build uses
 //!   since it needs no native library and no JS bridge. Validated to
@@ -30,7 +30,7 @@ pub(crate) trait InferenceBackend: Send + Sync {
 }
 
 /// Build the backend appropriate for the current build: native ONNX
-/// Runtime when the `ocr` feature is on, otherwise the pure-Rust
+/// Runtime when the `ocr-ort` feature is on, otherwise the pure-Rust
 /// `tract` backend (`ocr-tract`, which `ml` implies and `wasm-ocr`
 /// uses). `num_threads` is honoured only by the native backend.
 #[allow(unused_variables)]
@@ -40,15 +40,15 @@ pub(crate) fn build_backend(
 ) -> OcrResult<Box<dyn InferenceBackend>> {
     // Exactly one of these cfg blocks is compiled, and it is the
     // function's tail expression — no `return` needed (clippy-clean).
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     {
         Ok(Box::new(OrtBackend::from_bytes(model_bytes, num_threads)?))
     }
-    #[cfg(all(not(feature = "ocr"), feature = "ocr-tract"))]
+    #[cfg(all(not(feature = "ocr-ort"), feature = "ocr-tract"))]
     {
         Ok(Box::new(TractBackend::from_bytes(model_bytes)?))
     }
-    #[cfg(all(not(feature = "ocr"), not(feature = "ocr-tract")))]
+    #[cfg(all(not(feature = "ocr-ort"), not(feature = "ocr-tract")))]
     {
         Err(OcrError::ModelLoadError(
             "no OCR inference backend compiled in (enable `ocr` or `ocr-tract`)".to_string(),
@@ -60,7 +60,7 @@ pub(crate) fn build_backend(
 // Native ONNX Runtime backend (`ort`).
 // ---------------------------------------------------------------------------
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 pub(crate) struct OrtBackend {
     // `Mutex` because `ort::Session::run` needs `&mut` while the
     // detector/recognizer are shared `&self` across threads — exactly
@@ -68,7 +68,7 @@ pub(crate) struct OrtBackend {
     session: std::sync::Mutex<ort::session::Session>,
 }
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 impl OrtBackend {
     pub(crate) fn from_bytes(model_bytes: &[u8], num_threads: usize) -> OcrResult<Self> {
         // wrap `ort::Session::builder()` (and the
@@ -131,7 +131,7 @@ impl OrtBackend {
     }
 }
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 impl InferenceBackend for OrtBackend {
     fn run(&self, input: &ndarray::Array4<f32>) -> OcrResult<ndarray::ArrayD<f32>> {
         use ort::value::TensorRef;
@@ -167,13 +167,13 @@ impl InferenceBackend for OrtBackend {
 // Pure-Rust `tract` backend — the wasm32 path.
 // ---------------------------------------------------------------------------
 
-// When both `ocr` and `ocr-tract` are on (e.g. `--features ocr,ml`),
+// When both `ocr-ort` and `ocr-tract` are on (e.g. `--features ocr,ml`),
 // the native `ort` backend wins in `build_backend`, so this type is
 // compiled but unconstructed — intentional, not dead code. In a real
 // `wasm-ocr` build (`ocr` off) it *is* constructed, so the allow is
 // scoped to the combined-feature case only.
 #[cfg(feature = "ocr-tract")]
-#[cfg_attr(feature = "ocr", allow(dead_code))]
+#[cfg_attr(feature = "ocr-ort", allow(dead_code))]
 pub(crate) struct TractBackend {
     // The unoptimized inference graph. PaddleOCR det/rec have dynamic
     // H/W, so a plan is specialised + cached per concrete input shape
@@ -184,11 +184,11 @@ pub(crate) struct TractBackend {
 }
 
 #[cfg(feature = "ocr-tract")]
-#[cfg_attr(feature = "ocr", allow(dead_code))]
+#[cfg_attr(feature = "ocr-ort", allow(dead_code))]
 type TractPlan = tract_onnx::prelude::TypedRunnableModel<tract_onnx::prelude::TypedModel>;
 
 #[cfg(feature = "ocr-tract")]
-#[cfg_attr(feature = "ocr", allow(dead_code))]
+#[cfg_attr(feature = "ocr-ort", allow(dead_code))]
 impl TractBackend {
     pub(crate) fn from_bytes(model_bytes: &[u8]) -> OcrResult<Self> {
         use tract_onnx::prelude::*;
@@ -278,7 +278,7 @@ impl InferenceBackend for TractBackend {
 //   ORT_DYLIB_PATH=/path/libonnxruntime.so \
 //   cargo test --features ocr,ml --lib backend::parity -- --ignored --nocapture
 // ---------------------------------------------------------------------------
-#[cfg(all(test, feature = "ocr", feature = "ocr-tract"))]
+#[cfg(all(test, feature = "ocr-ort", feature = "ocr-tract"))]
 mod parity {
     use super::*;
 

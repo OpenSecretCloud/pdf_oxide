@@ -6,7 +6,7 @@
 //! machine-readable [`ReasonCode`] for every degraded result.
 //!
 //! This module is the **dependency root** and is *pure PDF inspection*:
-//! it carries **no `#[cfg(feature = "ocr")]`** gate and is fully
+//! it carries **no `#[cfg(feature = "ocr-ort")]`** gate and is fully
 //! testable on the no-`ocr` build (00-common-foundation §5/§9). The
 //! classification signal model (T2/T3) and the [`AutoExtractor`]
 //! pipeline (T4–T8) build on these types.
@@ -610,7 +610,7 @@ pub enum DocumentSummary {
 // `PdfDocument` (00-common-foundation §8 — the `sanitize_catalog`
 // injected-resolver precedent). `PdfDocument::classify_page` /
 // `classify_document` (in `document.rs`) gather the internal signals and
-// delegate here. No `#[cfg(feature = "ocr")]`.
+// delegate here. No `#[cfg(feature = "ocr-ort")]`.
 
 /// Dominant raster codec on a page — a strong scan-vs-pictorial prior.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1024,7 +1024,7 @@ impl AutoExtractor {
     pub fn prefetch_models(langs: &[OcrLanguage]) -> crate::Result<std::path::PathBuf> {
         let dir = Self::model_cache_dir();
         std::fs::create_dir_all(&dir).map_err(crate::error::Error::Io)?;
-        #[cfg(feature = "ocr")]
+        #[cfg(feature = "ocr-ort")]
         {
             let mut want: Vec<OcrLanguage> = langs.to_vec();
             if want.is_empty() {
@@ -1046,9 +1046,9 @@ impl AutoExtractor {
                 }
             }
         }
-        #[cfg(not(feature = "ocr"))]
+        #[cfg(not(feature = "ocr-ort"))]
         {
-            let _ = langs; // OCR models are only usable with the `ocr` feature
+            let _ = langs; // OCR models are only usable with the `ocr-ort` feature
         }
         Ok(dir)
     }
@@ -1066,7 +1066,7 @@ impl AutoExtractor {
     /// bindings) should warn instead of reporting a misleading success.
     #[must_use]
     pub fn prefetch_available() -> bool {
-        cfg!(feature = "ocr")
+        cfg!(feature = "ocr-ort")
     }
 
     /// Provision exactly the models **this** extractor's configured
@@ -1097,9 +1097,9 @@ impl AutoExtractor {
     }
 
     /// Idempotent HTTP GET → file (atomic via a `.part` temp). Skips
-    /// when the destination already exists. `#[cfg(feature = "ocr")]`
-    /// (download needs the `ureq` dep the `ocr` feature pulls in).
-    #[cfg(feature = "ocr")]
+    /// when the destination already exists. `#[cfg(feature = "ocr-ort")]`
+    /// (download needs the `ureq` dep the `ocr-ort` feature pulls in).
+    #[cfg(feature = "ocr-ort")]
     fn http_fetch(url: &str, dest: &std::path::Path) -> crate::Result<()> {
         use std::io::Read;
         if dest.is_file() {
@@ -1209,7 +1209,7 @@ impl AutoExtractor {
     /// `rec_<lang>.onnx` / `<lang>_dict.txt` — the layout
     /// `scripts/setup_ocr_models.sh <lang>…` produces. Aliases are
     /// normalised; unknown codes pass through verbatim.
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     fn ocr_lang_files(lang: &str) -> (String, String) {
         // Single source of truth: the same [`OcrLanguage`] spec that
         // `prefetch_models` / `model_manifest` / the setup script use,
@@ -1250,7 +1250,7 @@ impl AutoExtractor {
     /// the right model instead of the English default. `None` → English
     /// fallback (no clear non-Latin signal). Deliberately cheap and
     /// conservative — a hint, not a language classifier.
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     #[must_use]
     fn detect_ocr_language(doc: &PdfDocument, page: usize) -> Option<OcrLanguage> {
         let mut s = doc.extract_text(page).unwrap_or_default();
@@ -1290,7 +1290,7 @@ impl AutoExtractor {
     /// fallback). The single source of truth for the engine the
     /// Auto/ForceOcr router AND `extract_page`'s per-region split use
     /// (DRY — no divergent language selection).
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     #[must_use]
     fn build_ocr_engine(&self, doc: &PdfDocument, page: usize) -> Option<crate::ocr::OcrEngine> {
         let req: Vec<String> = if !self.opts.ocr_languages.is_empty() {
@@ -1303,7 +1303,7 @@ impl AutoExtractor {
         Self::load_ocr_engine(&req)
     }
 
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     #[must_use]
     fn load_ocr_engine(langs: &[String]) -> Option<crate::ocr::OcrEngine> {
         let dir = Self::model_cache_dir();
@@ -1362,7 +1362,7 @@ impl AutoExtractor {
         // `OcrRequestedButUnavailable` even when OCR was attempted).
         #[allow(unused_mut)]
         let mut ocr_attempted = false;
-        #[cfg(feature = "ocr")]
+        #[cfg(feature = "ocr-ort")]
         {
             // The page needs OCR. Build an engine from the documented
             // model cache dir (`AutoExtractor::model_cache_dir()` —
@@ -1436,10 +1436,10 @@ impl AutoExtractor {
                 ),
             }
         }
-        #[cfg(not(feature = "ocr"))]
+        #[cfg(not(feature = "ocr-ort"))]
         {
             log::warn!(
-                "auto-extract: OCR unavailable (ocr feature not enabled) \
+                "auto-extract: OCR unavailable (ocr-ort feature not enabled) \
                  for page {page} (kind={:?}); falling back to native \
                  text (reason OcrRequestedButUnavailable)",
                 cls.kind
@@ -1482,7 +1482,7 @@ impl AutoExtractor {
     /// span's y-centre alone places it (the borrowed MCID is `None` and
     /// harmless). Shared by the text, Markdown and HTML auto paths so all three
     /// position recovered image text identically.
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     fn build_image_ocr_span(
         &self,
         doc: &PdfDocument,
@@ -1551,7 +1551,7 @@ impl AutoExtractor {
     /// the image's **spatial** position in the page's reading order. Degrades to
     /// the plain append-merge when the text cannot be positioned (no image bbox),
     /// so the recovered text is never lost.
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     fn place_image_ocr_in_reading_order(
         &self,
         doc: &PdfDocument,
@@ -1583,7 +1583,7 @@ impl AutoExtractor {
     /// unavailable/empty, or when nothing new is recovered — callers then emit
     /// pure native output. Gives the Markdown/HTML auto paths the same
     /// native-plus-positioned-image-text behaviour as the text path.
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     fn hybrid_image_ocr_span(
         &self,
         doc: &PdfDocument,
@@ -1616,7 +1616,7 @@ impl AutoExtractor {
         // Auto mode: same contract as text — native Markdown PLUS text recovered
         // from image regions, positioned in reading order (never replacing the
         // native layer). Non-hybrid pages and the no-`ocr` build emit pure native.
-        #[cfg(feature = "ocr")]
+        #[cfg(feature = "ocr-ort")]
         if let Some(span) = self.hybrid_image_ocr_span(doc, page) {
             return doc.to_markdown_with_extra_spans(page, &[span], &ConversionOptions::default());
         }
@@ -1627,7 +1627,7 @@ impl AutoExtractor {
     pub fn extract_html(&self, doc: &PdfDocument, page: usize) -> crate::Result<String> {
         // Auto mode: native HTML PLUS positioned image-region OCR (see
         // extract_markdown). Non-hybrid pages and the no-`ocr` build emit native.
-        #[cfg(feature = "ocr")]
+        #[cfg(feature = "ocr-ort")]
         if let Some(span) = self.hybrid_image_ocr_span(doc, page) {
             return doc.to_html_with_extra_spans(page, &[span], &ConversionOptions::default());
         }
@@ -1681,8 +1681,8 @@ impl AutoExtractor {
         // `cls.kind`*, which mislabelled the native text as `Ocr` and
         // (via the old HybridPage either/or in `extract_text_with_ocr`)
         // silently dropped the in-image text — you could not "extract
-        // both". Fully `ocr`-gated; non-hybrid pages are unchanged.
-        #[cfg(feature = "ocr")]
+        // both". Fully `ocr-ort`-gated; non-hybrid pages are unchanged.
+        #[cfg(feature = "ocr-ort")]
         {
             if matches!(cls.kind, PageKind::ImageText | PageKind::Mixed)
                 && !matches!(self.opts.mode, ExtractMode::TextOnly)

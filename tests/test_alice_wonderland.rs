@@ -6,7 +6,7 @@
 //! - Size: 7.5 MB
 //! - Format: Scanned with OCR
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod alice_tests {
     use pdf_oxide::PdfDocument;
     use std::path::Path;
@@ -148,7 +148,7 @@ mod alice_tests {
     }
 }
 
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 mod alice_tests_disabled {
     #[test]
     fn test_alice_feature_disabled() {

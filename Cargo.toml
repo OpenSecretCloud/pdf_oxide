@@ -242,7 +242,7 @@ tokenizers = { version = "0.23", optional = true, default-features = false, feat
 # OCR - PaddleOCR via ONNX Runtime (optional)
 ort = { version = "=2.0.0-rc.11", optional = true, default-features = false, features = [
     "ndarray",
-    "load-dynamic",
+    "std",
 ] }
 imageproc = { version = "0.27.0", optional = true }
 
@@ -413,8 +413,16 @@ python = [
 ocr-tract = ["dep:tract-onnx", "dep:ndarray"]
 ml = ["ocr-tract", "dep:linfa", "dep:linfa-clustering", "dep:tokenizers"]
 table-ml = ["ml", "dep:pdfium-render"]
-ocr = ["dep:ort", "dep:imageproc", "dep:ndarray", "dep:ureq"]
-gpu = ["dep:ort", "ml"]
+# Native ONNX Runtime OCR backend with loader/linker policy left to the final
+# application. Static targets such as iOS can use their existing ORT linkage
+# without Cargo feature unification forcing `disable-linking`.
+ocr-ort = ["dep:ort", "dep:imageproc", "dep:ndarray", "dep:ureq"]
+# Backwards-compatible OCR feature: existing consumers keep loading an ONNX
+# Runtime shared library at runtime (for example via `ORT_DYLIB_PATH`).
+ocr = ["ocr-ort", "ort/load-dynamic"]
+# Preserve the existing GPU feature's dynamic-loader behavior. Only `ocr-ort`
+# is intentionally loader-neutral for embedding applications.
+gpu = ["dep:ort", "ort/load-dynamic", "ml"]
 wasm = [
     "dep:wasm-bindgen",
     "dep:web-sys",

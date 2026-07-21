@@ -1,5 +1,5 @@
 #![allow(warnings)]
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod ccitt_decoder_diagnosis {
     use pdf_oxide::decoders::CcittParams;
     use pdf_oxide::document::PdfDocument;

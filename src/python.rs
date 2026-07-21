@@ -2345,7 +2345,7 @@ impl PyPdfDocument {
         page: usize,
         engine: Option<Bound<'_, PyAny>>,
     ) -> PyResult<String> {
-        #[cfg(feature = "ocr")]
+        #[cfg(feature = "ocr-ort")]
         {
             let ocr_engine = if let Some(eng) = engine {
                 Some(eng.extract::<PyRef<PyOcrEngine>>()?)
@@ -2358,7 +2358,7 @@ impl PyPdfDocument {
                 .extract_text_with_ocr(page, engine_inner, options)
                 .map_err(|e| PyRuntimeError::new_err(e.to_string()))
         }
-        #[cfg(not(feature = "ocr"))]
+        #[cfg(not(feature = "ocr-ort"))]
         {
             let _ = (engine, page);
             // #513: actionable, not opaque. The bare "OCR feature not
@@ -4433,15 +4433,15 @@ fn outline_items_to_py(
     Ok(list.into())
 }
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 #[pyclass(module = "pdf_oxide.pdf_oxide", name = "OcrEngine", unsendable)]
 pub struct PyOcrEngine {
     inner: crate::ocr::OcrEngine,
 }
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 #[pyclass(module = "pdf_oxide.pdf_oxide", name = "OcrEngine", unsendable)]
 pub struct PyOcrEngine {}
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 #[pymethods]
 impl PyOcrEngine {
     #[new]
@@ -4453,7 +4453,7 @@ impl PyOcrEngine {
         Err(PyRuntimeError::new_err("OCR not enabled."))
     }
 }
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 #[pymethods]
 impl PyOcrEngine {
     #[new]
@@ -4471,7 +4471,7 @@ impl PyOcrEngine {
     }
 }
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 #[pyclass(
     module = "pdf_oxide.pdf_oxide",
     name = "OcrConfig",
@@ -4481,7 +4481,7 @@ impl PyOcrEngine {
 pub struct PyOcrConfig {
     inner: crate::ocr::OcrConfig,
 }
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 #[pyclass(
     module = "pdf_oxide.pdf_oxide",
     name = "OcrConfig",
@@ -4489,7 +4489,7 @@ pub struct PyOcrConfig {
 )]
 #[derive(Clone)]
 pub struct PyOcrConfig {}
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 #[pymethods]
 impl PyOcrConfig {
     #[new]
@@ -4498,7 +4498,7 @@ impl PyOcrConfig {
         Err(PyRuntimeError::new_err("OCR not enabled."))
     }
 }
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 #[pymethods]
 impl PyOcrConfig {
     #[new]

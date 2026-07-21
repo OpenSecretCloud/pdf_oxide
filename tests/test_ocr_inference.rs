@@ -9,7 +9,7 @@
 //! PDF: Pride and Prejudice (424 pages, 8.3 MB)
 //! Source: Archive.org (Public Domain)
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod ocr_inference_tests {
     use pdf_oxide::ocr::{OcrConfig, OcrEngine};
     use pdf_oxide::PdfDocument;
@@ -425,7 +425,7 @@ mod ocr_inference_tests {
 // TESTS FOR WHEN OCR FEATURE IS NOT ENABLED
 // ============================================================================
 
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 mod ocr_inference_not_enabled_tests {
     #[test]
     fn test_ocr_inference_feature_disabled() {

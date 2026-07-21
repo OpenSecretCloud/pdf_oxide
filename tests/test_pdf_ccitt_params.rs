@@ -1,4 +1,4 @@
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod ccitt_params {
     #![allow(dead_code, clippy::manual_div_ceil)]
     use pdf_oxide::document::PdfDocument;
@@ -143,7 +143,7 @@ mod ccitt_params {
     }
 }
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod compression_analysis {
     #[test]
     fn analyze_ccitt_compression_ratios() {

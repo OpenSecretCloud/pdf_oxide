@@ -7,7 +7,7 @@
 //! - Module API compatibility
 //! - Error handling
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod ocr_integration_tests {
     use pdf_oxide::ocr::{OcrConfig, OcrConfigBuilder, OcrExtractOptions};
 
@@ -366,7 +366,7 @@ mod ocr_integration_tests {
 // TESTS FOR WHEN OCR FEATURE IS NOT ENABLED
 // ============================================================================
 
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 mod ocr_integration_not_enabled_tests {
     #[test]
     fn test_ocr_integration_feature_disabled() {

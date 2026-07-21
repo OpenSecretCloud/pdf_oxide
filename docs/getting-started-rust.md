@@ -359,12 +359,17 @@ converter.convert("input.pdf", "archive.pdf")?;
 
 > For a comprehensive guide covering model selection, configuration reference, resize strategies, and troubleshooting, see the [OCR Guide](OCR_GUIDE.md).
 
-PDFOxide can extract text from scanned PDFs using PaddleOCR models via ONNX Runtime. Enable the `ocr` feature:
+PDFOxide can extract text from scanned PDFs using PaddleOCR models via ONNX
+Runtime. Enable `ocr` to load an installed runtime dynamically:
 
 ```toml
 [dependencies]
 pdf_oxide = { version = "0.3", features = ["ocr"] }
 ```
+
+Applications that already manage ONNX Runtime linkage can enable `ocr-ort`
+instead. That enables the same OCR backend without forcing
+`ort/load-dynamic`; configure `ort-sys` for the target at build time.
 
 ### Model Setup
 
@@ -444,7 +449,7 @@ let config = OcrConfig::v5();
 let engine = OcrEngine::new("v5_det.onnx", "v5_rec.onnx", "v5_dict.txt", config)?;
 ```
 
-> **Note:** ONNX Runtime (`libonnxruntime` v1.23+) is loaded dynamically at runtime. Install it (system package, `brew install onnxruntime`, or a manual download) and either set `ORT_DYLIB_PATH` to the shared-library **file** (`libonnxruntime.so` / `.dylib` / `onnxruntime.dll`), or add its directory to `LD_LIBRARY_PATH` (`DYLD_LIBRARY_PATH` on macOS). `ORT_LIB_LOCATION` is a build-time variable and has no effect with the dynamic backend this crate uses.
+> **Note:** With `ocr`, ONNX Runtime (`libonnxruntime` v1.23+) is loaded dynamically at runtime. Install it (system package, `brew install onnxruntime`, or a manual download) and either set `ORT_DYLIB_PATH` to the shared-library **file** (`libonnxruntime.so` / `.dylib` / `onnxruntime.dll`), or add its directory to `LD_LIBRARY_PATH` (`DYLD_LIBRARY_PATH` on macOS). With `ocr-ort`, loader/linker policy remains caller-controlled and `ORT_LIB_LOCATION` or `ORT_IOS_XCFWK_LOCATION` can be supplied at build time.
 
 ## Lower-Level APIs
 

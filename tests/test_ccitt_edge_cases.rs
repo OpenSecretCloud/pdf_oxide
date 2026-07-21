@@ -1,4 +1,4 @@
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod ccitt_edge_cases {
     use pdf_oxide::document::PdfDocument;
 

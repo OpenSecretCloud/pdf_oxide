@@ -5390,10 +5390,10 @@ impl PdfDocument {
     /// assembled exactly as [`extract_text_with_options`](Self::extract_text_with_options)
     /// would, so the native text is byte-for-byte preserved; the extra spans
     /// only add content, sorted in by their bounding box.
-    // Only the Auto extractor (behind the `ocr` feature) and the unit test that
+    // Only the Auto extractor (behind the `ocr-ort` feature) and the unit test that
     // pins span placement call this, so it is compiled only in those configs —
-    // a plain non-`ocr` `--lib` build omits it entirely (no dead code).
-    #[cfg(any(feature = "ocr", test))]
+    // a build without the OCR backend omits it entirely (no dead code).
+    #[cfg(any(feature = "ocr-ort", test))]
     pub(crate) fn extract_text_with_extra_spans(
         &self,
         page_index: usize,
@@ -5994,7 +5994,7 @@ impl PdfDocument {
             spans.extend(marginalia_trailing);
 
             // OCR fallback for scanned PDFs
-            #[cfg(feature = "ocr")]
+            #[cfg(feature = "ocr-ort")]
             if spans.is_empty() || spans.iter().map(|s| s.text.len()).sum::<usize>() < 50 {
                 if let Ok(true) = crate::ocr::needs_ocr(self, page_index) {
                     log::debug!(
@@ -6677,7 +6677,7 @@ impl PdfDocument {
     /// // Automatically uses native text or OCR as needed
     /// let text = doc.extract_text_with_ocr(0, Some(&engine), OcrExtractOptions::default())?;
     /// ```
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     pub fn extract_text_with_ocr(
         &self,
         page_index: usize,
@@ -6713,7 +6713,7 @@ impl PdfDocument {
     /// when the OCR backend fails to initialise (e.g. missing
     /// `libonnxruntime.so`) — the [`catch_unwind`](std::panic::catch_unwind)
     /// in `OrtBackend::from_bytes` keeps that path panic-free.
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     pub fn extract_text_ocr_only(
         &self,
         page_index: usize,
@@ -6745,7 +6745,7 @@ impl PdfDocument {
     /// # Returns
     ///
     /// Vector of TextSpans, either from native PDF or OCR.
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     pub fn extract_spans_with_ocr(
         &self,
         page_index: usize,
@@ -19354,9 +19354,9 @@ impl PdfDocument {
     /// [`extract_text_with_extra_spans`](Self::extract_text_with_extra_spans).
     /// The Auto extractor uses this to drop OCR'd image text into its figure's
     /// reading-order slot for Markdown, so auto markdown is a superset of native.
-    // Only the (ocr-gated) Auto extractor calls this, so compile it only with
-    // the `ocr` feature — a non-`ocr` build omits it (no dead code).
-    #[cfg(feature = "ocr")]
+    // Only the (`ocr-ort`-gated) Auto extractor calls this, so a build without
+    // the OCR backend omits it (no dead code).
+    #[cfg(feature = "ocr-ort")]
     pub(crate) fn to_markdown_with_extra_spans(
         &self,
         page_index: usize,
@@ -19831,7 +19831,7 @@ impl PdfDocument {
     ///     &OcrExtractOptions::default()
     /// )?;
     /// ```
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     pub fn to_markdown_with_ocr(
         &self,
         page_index: usize,
@@ -19942,9 +19942,9 @@ impl PdfDocument {
     /// Convert a page to HTML with caller-supplied extra spans merged into the
     /// converter's reading-order pass — the HTML companion to
     /// [`to_markdown_with_extra_spans`](Self::to_markdown_with_extra_spans).
-    // Only the (ocr-gated) Auto extractor calls this, so compile it only with
-    // the `ocr` feature — a non-`ocr` build omits it (no dead code).
-    #[cfg(feature = "ocr")]
+    // Only the (`ocr-ort`-gated) Auto extractor calls this, so a build without
+    // the OCR backend omits it (no dead code).
+    #[cfg(feature = "ocr-ort")]
     pub(crate) fn to_html_with_extra_spans(
         &self,
         page_index: usize,

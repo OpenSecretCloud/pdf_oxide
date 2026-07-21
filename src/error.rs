@@ -101,9 +101,9 @@ pub enum Error {
     Ml(String),
 
     /// OCR error. Available whenever the OCR module is compiled —
-    /// `ocr` (native ONNX Runtime) or `ocr-tract` (pure-Rust tract /
-    /// wasm, which `ml` implies — issue #524).
-    #[cfg(any(feature = "ocr", feature = "ocr-tract"))]
+    /// `ocr-ort` (native ONNX Runtime; implied by legacy `ocr`) or
+    /// `ocr-tract` (pure-Rust tract / wasm, which `ml` implies — issue #524).
+    #[cfg(any(feature = "ocr-ort", feature = "ocr-tract"))]
     #[error("OCR error: {0}")]
     Ocr(String),
 

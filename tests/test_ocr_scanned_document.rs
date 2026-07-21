@@ -8,7 +8,7 @@
 //! - Pages: 400+ pages of historical text
 //! - Quality: High-quality scan
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod ocr_scanned_tests {
     use pdf_oxide::PdfDocument;
     use std::path::Path;
@@ -342,7 +342,7 @@ mod ocr_scanned_tests {
 // TESTS FOR WHEN OCR FEATURE IS NOT ENABLED
 // ============================================================================
 
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 mod ocr_scanned_not_enabled_tests {
     #[test]
     fn test_ocr_scanned_feature_disabled() {
