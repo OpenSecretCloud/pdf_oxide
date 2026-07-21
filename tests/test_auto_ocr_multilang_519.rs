@@ -17,7 +17,7 @@
 //! ready the instant such a pair is dropped in, but it cannot be
 //! fetched — a provisioning limit, not a code defect). Requires the
 //! `ocr` feature.
-#![cfg(feature = "ocr")]
+#![cfg(feature = "ocr-ort")]
 
 use pdf_oxide::document::PdfDocument;
 use pdf_oxide::extractors::auto::{AutoExtractOptions, AutoExtractor, ExtractSource};

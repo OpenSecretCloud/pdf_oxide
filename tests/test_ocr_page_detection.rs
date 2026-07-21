@@ -1,7 +1,7 @@
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 use pdf_oxide::document::PdfDocument;
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 #[test]
 fn test_detect_page_type_text_page() {
     use pdf_oxide::ocr::{detect_page_type, PageType};
@@ -10,7 +10,7 @@ fn test_detect_page_type_text_page() {
     assert_eq!(page_type, PageType::NativeText);
 }
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 #[test]
 fn test_needs_ocr_text_page_false() {
     use pdf_oxide::ocr::needs_ocr;
@@ -22,7 +22,7 @@ fn test_needs_ocr_text_page_false() {
 /// detect_page_type uses extract_spans (not extract_text) to avoid infinite
 /// recursion: extract_text -> needs_ocr -> detect_page_type -> extract_text.
 /// If we reach the end without stack overflow, the guard works.
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 #[test]
 fn test_detect_page_type_no_infinite_recursion() {
     use pdf_oxide::ocr::{detect_page_type, needs_ocr};

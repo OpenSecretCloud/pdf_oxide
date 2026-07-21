@@ -18,7 +18,7 @@ PDFOxide automatically detects whether a page is scanned or has native text, so 
 # 1. Download recommended models (~12.5 MB total)
 ./scripts/setup_ocr_models.sh
 
-# 2. Run (Rust)
+# 2. Run (Rust, loading an installed ONNX Runtime at runtime)
 cargo run --features ocr --example ocr_scanned_pdf -- \
     --pdf scanned.pdf \
     --det .models/det.onnx \
@@ -28,15 +28,17 @@ cargo run --features ocr --example ocr_scanned_pdf -- \
 
 ## OCR Support by Binding
 
-OCR *recognition* needs the native `ocr` feature compiled in **plus** an
-ONNX Runtime shared library and provisioned models at runtime.
+OCR *recognition* needs the native ONNX Runtime backend compiled in **plus**
+an ONNX Runtime library and provisioned models. The backwards-compatible
+`ocr` feature loads the runtime dynamically. Applications that already
+manage ONNX Runtime linkage can use the loader-neutral `ocr-ort` feature.
 **Auto mode works in every binding regardless**: when OCR is unavailable
 it degrades gracefully to native text with a typed
 `ocr_requested_but_unavailable` reason — never a crash or silent empty.
 
 | Binding | OCR recognition | How |
 |---|---|---|
-| Rust | yes | build with `--features ocr` |
+| Rust | yes | use `ocr` for runtime loading, or `ocr-ort` for caller-managed linking |
 | Python | yes | the published wheel ships `ocr`; supply ONNX Runtime + models |
 | Node.js / TypeScript | yes (v0.3.52+) | the published prebuilt ships `ocr`; `npm i onnxruntime-node` + models |
 | Go (cgo + purego) | yes (v0.3.52+) | the published native lib ships `ocr`; supply ONNX Runtime + models |
@@ -356,7 +358,19 @@ The `setup_ocr_models.sh` script handles this automatically.
 
 ## ONNX Runtime Setup
 
-The OCR feature requires ONNX Runtime v1.23+ at runtime.
+The OCR feature requires ONNX Runtime v1.23+. PDFOxide offers two feature
+levels so the final application can own loader/linker policy when needed:
+
+- `ocr` is the backwards-compatible feature. It includes `ocr-ort` and enables
+  `ort/load-dynamic`. Use `ORT_DYLIB_PATH` at runtime or put the shared library
+  on the platform loader search path.
+- `ocr-ort` enables the same ONNX Runtime OCR backend without forcing a loading
+  strategy. Configure normal `ort-sys` linking for the target, such as with
+  `ORT_LIB_LOCATION` or `ORT_IOS_XCFWK_LOCATION` at build time.
+
+Cargo features are additive. If any crate in the final dependency graph
+enables `ocr` (or `ort/load-dynamic` directly), dynamic loading
+applies to the shared `ort` dependency for the whole application.
 
 ### Option 1: System Install
 
@@ -369,12 +383,12 @@ wget https://github.com/microsoft/onnxruntime/releases/download/v1.23.0/onnxrunt
 tar xzf onnxruntime-linux-x64-1.23.0.tgz
 ```
 
-### Option 2: Point to an installed ONNX Runtime (runtime)
+### Option 2: Point to an installed ONNX Runtime (runtime loading)
 
-This crate loads ONNX Runtime **dynamically at runtime** (the `ort` `load-dynamic`
-feature), so you point it at an installed library — no rebuild needed. Note that
-`ORT_LIB_LOCATION` is a *build-time* variable for `ort`'s download/static-link
-strategies and has **no effect** here; use one of:
+With `ocr`, PDFOxide loads ONNX Runtime **dynamically at runtime**,
+so you point it at an installed library — no rebuild needed. Note that
+`ORT_LIB_LOCATION` is a *build-time* variable for linked builds and has **no
+effect** in this mode; use one of:
 
 ```bash
 # Either give ort the full path to the shared-library FILE:
@@ -385,6 +399,12 @@ export LD_LIBRARY_PATH=/path/to/onnxruntime/lib:$LD_LIBRARY_PATH    # DYLD_LIBRA
 
 cargo run --features ocr --example ocr_scanned_pdf -- ...
 ```
+
+For a linked build, enable `ocr-ort` instead and configure `ort-sys` at build time.
+For example, `ORT_LIB_LOCATION` points to the ONNX Runtime library directory;
+`ORT_PREFER_DYNAMIC_LINK=1` requests ordinary loader-linked shared-library
+linking rather than static linking. iOS applications can supply an existing
+XCFramework with `ORT_IOS_XCFWK_LOCATION`.
 
 ### macOS
 
@@ -402,8 +422,8 @@ export ORT_DYLIB_PATH="$(brew --prefix onnxruntime)/lib/libonnxruntime.dylib"
 
 The **default** `pdf-oxide-wasm` package ships **without** OCR — its
 `WasmOcrEngine` / `extractTextOcr` throw an error directing you to the
-`wasm-ocr` build. (The native `ort` OCR backend links a native ONNX
-Runtime shared library and does not target `wasm32`.) Auto mode still
+`wasm-ocr` build. (The native `ort` OCR backend requires a native ONNX
+Runtime library and does not target `wasm32`.) Auto mode still
 works there, falling back to native text with a typed reason.
 
 The **`wasm-ocr` build** (issue #524, *experimental*) runs OCR entirely
@@ -510,7 +530,7 @@ Make sure you're using `OcrConfig::v5()` (Rust) or `OcrConfig(use_v5=True)` (Pyt
 
 ### Build error: `no method named tls_config`
 
-This is a known bug in `ort-sys` 2.0.0-rc.11 when using the `download-binaries` feature. This crate uses the `load-dynamic` feature instead, so install ONNX Runtime manually and point to it at runtime — `ORT_DYLIB_PATH=/path/to/libonnxruntime.<so|dylib|dll>`, or add its directory to `LD_LIBRARY_PATH` (`DYLD_LIBRARY_PATH` on macOS). See "Point to an installed ONNX Runtime" above.
+This is a known bug in `ort-sys` 2.0.0-rc.11 when using the `download-binaries` feature. Use `ocr`, install ONNX Runtime manually, and point to it at runtime — `ORT_DYLIB_PATH=/path/to/libonnxruntime.<so|dylib|dll>`, or add its directory to `LD_LIBRARY_PATH` (`DYLD_LIBRARY_PATH` on macOS). See "Point to an installed ONNX Runtime" above.
 
 ### Python segfault (exit code 139)
 

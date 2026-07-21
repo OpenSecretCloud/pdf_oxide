@@ -9040,7 +9040,7 @@ pub extern "C" fn pdf_ocr_engine_create(
     dict_path: *const c_char,
     error_code: *mut i32,
 ) -> *mut std::ffi::c_void {
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     {
         use crate::ocr::{OcrConfig, OcrEngine};
 
@@ -9080,7 +9080,7 @@ pub extern "C" fn pdf_ocr_engine_create(
             },
         }
     }
-    #[cfg(not(feature = "ocr"))]
+    #[cfg(not(feature = "ocr-ort"))]
     {
         let _ = (det_model_path, rec_model_path, dict_path);
         set_error(error_code, _ERR_UNSUPPORTED);
@@ -9091,7 +9091,7 @@ pub extern "C" fn pdf_ocr_engine_create(
 /// Free an OCR engine handle created by `pdf_ocr_engine_create`.
 #[no_mangle]
 pub extern "C" fn pdf_ocr_engine_free(engine: *mut std::ffi::c_void) {
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     {
         use crate::ocr::OcrEngine;
         if !engine.is_null() {
@@ -9100,7 +9100,7 @@ pub extern "C" fn pdf_ocr_engine_free(engine: *mut std::ffi::c_void) {
             }
         }
     }
-    #[cfg(not(feature = "ocr"))]
+    #[cfg(not(feature = "ocr-ort"))]
     {
         let _ = engine;
     }
@@ -9115,7 +9115,7 @@ pub extern "C" fn pdf_ocr_page_needs_ocr(
     page_index: i32,
     error_code: *mut i32,
 ) -> bool {
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     {
         if doc.is_null() {
             set_error(error_code, ERR_INVALID_ARG);
@@ -9133,7 +9133,7 @@ pub extern "C" fn pdf_ocr_page_needs_ocr(
             },
         }
     }
-    #[cfg(not(feature = "ocr"))]
+    #[cfg(not(feature = "ocr-ort"))]
     {
         let _ = (doc, page_index);
         set_error(error_code, _ERR_UNSUPPORTED);
@@ -9150,7 +9150,7 @@ pub extern "C" fn pdf_ocr_extract_text(
     engine: *const std::ffi::c_void,
     error_code: *mut i32,
 ) -> *mut c_char {
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     {
         use crate::ocr::{OcrEngine, OcrExtractOptions};
 
@@ -9180,7 +9180,7 @@ pub extern "C" fn pdf_ocr_extract_text(
             },
         }
     }
-    #[cfg(not(feature = "ocr"))]
+    #[cfg(not(feature = "ocr-ort"))]
     {
         let _ = (doc, page_index, engine);
         set_error(error_code, _ERR_UNSUPPORTED);

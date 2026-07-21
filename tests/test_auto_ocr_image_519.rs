@@ -12,7 +12,7 @@
 //! no-model default lane stays green); the CI OCR lane provisions them
 //! via `setup_ocr_models.sh` + `PDF_OXIDE_MODEL_DIR`, where this runs
 //! for real. Requires the `ocr` feature.
-#![cfg(feature = "ocr")]
+#![cfg(feature = "ocr-ort")]
 
 use pdf_oxide::document::PdfDocument;
 use pdf_oxide::extractors::auto::{AutoExtractor, ExtractSource, PageKind};

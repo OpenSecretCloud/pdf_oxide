@@ -33,28 +33,28 @@
 //!     --v5
 //! ```
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 use pdf_oxide::document::PdfDocument;
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 use pdf_oxide::ocr::{self, OcrConfig, OcrEngine, OcrExtractOptions};
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 use std::env;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    #[cfg(not(feature = "ocr"))]
+    #[cfg(not(feature = "ocr-ort"))]
     {
         eprintln!("This example requires the 'ocr' feature to be enabled.");
         eprintln!("Run with: cargo run --features ocr --example ocr_scanned_pdf");
         Err("OCR feature not enabled".into())
     }
 
-    #[cfg(feature = "ocr")]
+    #[cfg(feature = "ocr-ort")]
     {
         run_ocr()
     }
 }
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 fn run_ocr() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 

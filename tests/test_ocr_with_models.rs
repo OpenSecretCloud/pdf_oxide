@@ -4,7 +4,7 @@
 //! These tests verify that the OCR module can load and initialize
 //! with actual ONNX/Paddle models.
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod ocr_model_tests {
     use pdf_oxide::ocr::{OcrConfig, TextDetector, TextRecognizer};
     use std::path::Path;
@@ -312,7 +312,7 @@ mod ocr_model_tests {
 // TESTS FOR WHEN OCR FEATURE IS NOT ENABLED
 // ============================================================================
 
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 mod ocr_models_not_enabled_tests {
     #[test]
     fn test_ocr_models_feature_disabled() {

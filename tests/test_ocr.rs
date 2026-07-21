@@ -7,7 +7,7 @@
 //! and should be run with `cargo test --features ocr -- --ignored`
 //! after placing model files in the appropriate location.
 
-#![cfg(feature = "ocr")]
+#![cfg(feature = "ocr-ort")]
 
 use image::{DynamicImage, GenericImageView, RgbImage};
 use pdf_oxide::ocr::{
