@@ -26,7 +26,7 @@
 //! Model-gated: skips cleanly when models are not provisioned (the
 //! no-model default lane stays green); the CI OCR lane provisions them
 //! and runs it for real. Requires the `ocr` feature.
-#![cfg(feature = "ocr")]
+#![cfg(feature = "ocr-ort")]
 
 use pdf_oxide::document::PdfDocument;
 use pdf_oxide::extractors::auto::{AutoExtractor, ExtractSource, PageKind};

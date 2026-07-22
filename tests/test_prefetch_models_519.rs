@@ -3,7 +3,7 @@
 //! requires the `ocr` feature (the `ureq` downloader) + outbound HTTPS;
 //! runs in the CI `ocr` lane (which already has network for the model
 //! provisioning). Skips cleanly when offline.
-#![cfg(feature = "ocr")]
+#![cfg(feature = "ocr-ort")]
 
 use pdf_oxide::extractors::{AutoExtractor, OcrLanguage};
 

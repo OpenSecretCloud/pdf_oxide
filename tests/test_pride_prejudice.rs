@@ -6,7 +6,7 @@
 //! - Size: 8.3 MB
 //! - Format: Scanned with OCR
 
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod pride_tests {
     use pdf_oxide::PdfDocument;
     use std::path::Path;
@@ -136,7 +136,7 @@ mod pride_tests {
     }
 }
 
-#[cfg(not(feature = "ocr"))]
+#[cfg(not(feature = "ocr-ort"))]
 mod pride_tests_disabled {
     #[test]
     fn test_pride_feature_disabled() {

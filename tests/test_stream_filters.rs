@@ -1,5 +1,5 @@
 #![allow(unused_imports)]
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod stream_filters_test {
     use pdf_oxide::document::PdfDocument;
     use pdf_oxide::object::Object;

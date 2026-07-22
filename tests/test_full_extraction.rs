@@ -4,7 +4,7 @@
     clippy::len_zero,
     clippy::redundant_pattern_matching
 )]
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 #[test]
 fn test_full_document_extraction() {
     use pdf_oxide::converters::ConversionOptions;

@@ -3,7 +3,7 @@
 // which are internal to PdfDocument. For image filter analysis, use the public document APIs.
 
 /*
-#[cfg(feature = "ocr")]
+#[cfg(feature = "ocr-ort")]
 mod image_filter_tests {
     use pdf_oxide::document::PdfDocument;
 
