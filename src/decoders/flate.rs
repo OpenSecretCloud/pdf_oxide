@@ -31,7 +31,7 @@ fn effective_limit_from_str(val: Option<&str>) -> u64 {
 
 /// Read the decompression limit from the environment, falling back to the
 /// compile-time default.
-fn effective_limit() -> u64 {
+pub(super) fn effective_limit() -> u64 {
     let val = std::env::var("PDF_OXIDE_MAX_DECOMPRESS_MB");
     effective_limit_from_str(val.as_deref().ok())
 }
